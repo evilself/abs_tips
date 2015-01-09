@@ -4,6 +4,7 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var app = express();
 var mongoose = require('mongoose');
+var sql = require('mssql');
 
 //handle static content
 app.use(express.static(__dirname + '/public'));
@@ -14,7 +15,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 // Database
-mongoose.connect('mongodb://localhost/XXXX');
+//mongoose.connect('mongodb://localhost/XXXX');
 
 var Schema = mongoose.Schema;  
 
@@ -26,6 +27,42 @@ var Tip = new Schema({
 });
 
 var TipModel = mongoose.model('Tip', Tip);
+
+app.get('/getTips', function(req, res){
+
+    var config = {
+        user: 'sa',
+        password: 'adminroot',
+        server: 'localhost\\sqlexpress', // You can use 'localhost\\instance' to connect to named instance
+        database: 'abstips',
+
+        options: {
+            encrypt: false // Use this if you're on Windows Azure
+        }
+    }
+
+    var data;
+    sql.connect(config, function(err) {
+        // ... error checks
+
+        // Query
+
+        var request = new sql.Request();
+        request.query('select * from tip', function(err, recordset) {
+            // ... error checks            
+            
+            console.log(recordset[0].TIP_CONTACT_NAME);
+            var myJsonString = JSON.stringify(recordset);
+            //res.writeHeader("content-header","text/plain");
+            res.end(myJsonString);
+        });
+        
+
+    });
+
+    
+
+});
 
 app.get('/show', function (req, res){
   return TipModel.find(function (err, tips) {
@@ -55,6 +92,40 @@ app.post('/', function(req, res) {
         color = req.body.color;
     
     
+    //*************************************************DB
+    
+         var config = {
+        user: 'sa',
+        password: 'adminroot',
+        server: 'localhost\\sqlexpress', // You can use 'localhost\\instance' to connect to named instance
+        database: 'abstips',
+
+        options: {
+            encrypt: false // Use this if you're on Windows Azure
+        }
+    }
+
+    var data;
+    sql.connect(config, function(err) {
+        // ... error checks
+
+        // Query
+
+        var request = new sql.Request();
+        
+        var q = "INSERT INTO tip (TIP_CONTACT_NAME, TIP_CONTACT_TITLE, TIP_ADDRESS, TIP_INSTITUTION) VALUES ('JOBBY','PROG','Edmond','ABS')";
+        request.query(q, function(err, recordset) {
+            // ... error checks            
+            console.log("SAVED ");
+            res.end();
+        });
+        
+
+    });
+
+    
+    //****************************************************
+    
     var nodemailer = require("nodemailer");
  
     var smtpTransport = nodemailer.createTransport({
@@ -80,7 +151,7 @@ app.post('/', function(req, res) {
         });
    
     // ...
-    res.end();
+    
 });
 
 app.listen(process.env.PORT || 3000);
