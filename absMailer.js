@@ -8,8 +8,8 @@ exports.send = function(from, to, subject, body) {
         host: "smtp.office365.com",
         port: 587,
         auth: {
-            user: "XX",
-            pass: "XX"
+            user: "xx@xx-xx.com",
+            pass: "xx!14"
         }
     }); 
 

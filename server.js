@@ -103,8 +103,8 @@ app.post('/', function(req, res) {
             console.log(data);
             /* send mail */
             var emailData = {
-                "from":"BM <XX>",
-                "to":"BM XX",
+                "from":"BM <xxx>",
+                "to":"BM xxxx",
                 "subject":"New Tip!",            
                 "data": data
             };
