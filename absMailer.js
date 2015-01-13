@@ -2,22 +2,23 @@
 
 var nodemailer = require("nodemailer");
     
-exports.send = function(from, to, subject, body) { 
+exports.send = function(config, data) { 
     
     var smtpTransport = nodemailer.createTransport({
-        host: "smtp.office365.com",
-        port: 587,
+        host: config.host,
+        port: config.port,
         auth: {
-            user: "xx@xx-xx.com",
-            pass: "xx!14"
+            user: config.user,
+            pass: config.pass
         }
     }); 
 
     smtpTransport.sendMail({
-        from: from, // sender address
-        to: to, // comma separated list of receivers
-        subject: subject, // Subject line
-        html:  body // plaintext body
+        from: data.from, // sender address
+        to: data.to, // comma separated list of receivers
+        cc: data.cc,
+        subject: data.subject, // Subject line
+        html:  data.data // html body
         }, function(error, response){
             if(error){
                 console.log(error);

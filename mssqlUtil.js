@@ -8,10 +8,10 @@ exports.executeQuery = function(config, query, cb) {
     if(!config) {
     
         var config = {
-            user: 'xx',
-            password: 'xx',
-            server: 'xx\\xx', // You can use 'localhost\\instance' to connect to named instance
-            database: 'xx',
+            user: config.user,
+            password: config.password,
+            server: (config.server+'\\'+config.instance), // You can use 'localhost\\instance' to connect to named instance
+            database: config.database,
 
             options: {
                 encrypt: false // Use this if you're on Windows Azure

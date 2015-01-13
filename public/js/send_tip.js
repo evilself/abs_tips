@@ -8,7 +8,8 @@ $(function() {
         submitSuccess: function($form, event) {
             event.preventDefault(); // prevent default submit behaviour
             // get values from FORM
-			var submitter = $("input#submitter").val();
+			var userSelectEmail = $("#userSelect").val();
+            var userSelectName = $('#userSelect option:selected').html();            
             var name = $("input#name").val();
 			var title = $("input#title").val();
 			var institution = $("input#institution").val();
@@ -26,7 +27,8 @@ $(function() {
                 url: "/",
                 type: "POST",
                 data: {
-					submitter: submitter,                    
+					userSelectEmail: userSelectEmail,
+                    userSelectName: userSelectName,    
                     name: name,
 					title: title,
 					institution: institution,

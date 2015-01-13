@@ -3,6 +3,7 @@
 /* import Express */
 var express = require('express');
 var fs = require('fs');
+var propReader = require('properties-reader');
 var bodyParser = require('body-parser');
 var app = express();
 
@@ -11,35 +12,6 @@ var mssqlutil = require('./mssqlUtil');
 
 /* This is my custom mailer */
 var mailer = require('./absMailer');
-
-/*MongoDB and Mongoose are not going to be used in this app, since everybody at ABS and clients is using SQL Server*/
-//var mongoose = require('mongoose');
-// Database
-//mongoose.connect('mongodb://localhost/XXXX');
-
-/*var Schema = mongoose.Schema;  
-
-var Tip = new Schema({  
-    tip_date: { type: Date, default: Date.now },
-    name : { type: String, required: true },  
-    title: { type: String, required: true },  
-    phone: { type: String, unique: true }    
-});
-
-var TipModel = mongoose.model('Tip', Tip);*/
-
-/*app.get('/show', function (req, res){
-  return TipModel.find(function (err, tips) {
-    if (!err) {
-        console.log(tips.length);
-      return res.send(tips);
-    } else {
-      return console.log(err);
-    }
-  });
-});*/
-//*********************MONGO DB*******************************************************************************************
-
 
 //handle static content in Express
 app.use(express.static(__dirname + '/public'));
@@ -50,12 +22,17 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
+/* Set the properties file here */
+var properties = propReader('config.properties');
+
+var smtp = getSMTP(properties);
+var ds = getDS(properties);
 
 /* AJAX get the most recent tips */
 app.get('/getTips', function(req, res){
 
     var selectQuery = 'select top 10 * from tip order by tip.TIP_DATE desc';
-    mssqlutil.executeQuery(null, selectQuery, function(err, data) {       
+    mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
         
         if (err) throw err;
         if(data.length < 1) res.end('No submitted tips');
@@ -66,11 +43,43 @@ app.get('/getTips', function(req, res){
 
 });
 
+/* AJAX get the most recent tips */
+app.get('/getUsers', function(req, res){
+
+    var selectQuery = 'select TIP_USER_NAME, TIP_USER_EMAIL from ABS_USER order by ABS_USER.TIP_USER_NAME';
+    mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
+        
+        if (err) throw err;
+        //if(data.length < 1) res.end('No submitted tips');
+        
+        var myJsonString = JSON.stringify(data);        
+        res.end(myJsonString);  
+    });
+
+});
+
 /* AJAX POST */
 app.post('/', function(req, res) { 
     
-    var toBeInserted = {
-        "submitter":  req.body.submitter,
+    var lookupUserQuery = " select TIP_USER_ID from ABS_USER where ABS_USER.TIP_USER_NAME like '%" +req.body.userSelectName+"%'";
+    var userID = '';
+    console.log(lookupUserQuery)
+    
+    mssqlutil.executeQuery(ds, lookupUserQuery, function(err, records) {
+       
+        if (err) res.end('User could not be found');
+        else {
+            console.log(records);
+            var myJsonString = JSON.stringify(records);
+            var array = JSON.parse(myJsonString);
+            console.log(myJsonString);
+            for (var i = 0; i < array.length; i++) {
+                
+                userID = array[i].TIP_USER_ID;
+            }
+            var toBeInserted = {
+        "submitter":  userID,
+        "submitterEmail":  req.body.userSelectEmail,
         "name":  req.body.name,
         "title": req.body.title,
         "institution": req.body.institution,
@@ -79,39 +88,51 @@ app.post('/', function(req, res) {
         "email": req.body.email,
         "phone": req.body.phone,
         "instructions": req.body.message
-    };
+    };    
     
-    var data =  '<strong>Submitter:</strong> '+ req.body.submitter + ' <br/> '+                
-                '<strong>Name:</strong> '+ req.body.name + '  <br/> '+
-                '<strong>Title:</strong> '+ req.body.title + '  <br/> '+
-                '<strong>Institution:</strong> '+ req.body.institution + '  <br/> '+
-                '<strong>Address:</strong> '+ req.body.address + ' <br/> '+
-                '<strong>City, State, Zip:</strong> '+ req.body.citystatezip + '  <br/> '+
-                '<strong>Phone:</strong> '+ req.body.phone + '  <br/> '+
-                '<strong>Email:</strong> '+ req.body.email + '  <br/> '+
-                '<strong>Instractions:</strong> '+ req.body.message + '  <br/> '
+            var sss = toBeInserted.instructions;
+            sss = sss.replace(/'/g, "''");
+            toBeInserted.instructions = sss;
+    console.log(sss);
+       // return ;
+    var data =  '<table style="border:1px solid #CCCCCC;"><tr><td style="width:25%;text-align:right"><strong>Submitter</strong></td><td style="color: #336799; width:75%"> '+ req.body.userSelectName + '</td></tr> '+                
+                '<tr><td style="text-align:right"><strong>Name</strong></td><td style="color: #336799; width:75%"> '+ req.body.name + ' </td></tr> '+
+                '<tr><td style="text-align:right"><strong>Title</strong></td><td style="color: #336799; width:75%"> '+ req.body.title + ' </td></tr> '+
+                '<tr><td style="text-align:right"><strong>Institution</strong></td><td style="color: #336799; width:75%"> '+ req.body.institution + ' </td></tr> '+
+                '<tr><td style="text-align:right"><strong>Address</strong></td><td style="color: #336799; width:75%"> '+ req.body.address + '</td></tr> '+
+                '<tr><td style="text-align:right"><strong>City, State, Zip</strong></td><td style="color: #336799; width:75%"> '+ req.body.citystatezip + '</td></tr>'+
+                '<tr><td style="text-align:right"><strong>Phone</strong></td><td style="color: #336799; width:75%"> '+ req.body.phone + '</td></tr> '+
+                '<tr><td style="text-align:right"><strong>Email</strong></td><td style="color: #336799; width:75%"> '+ req.body.email + ' </td></tr> '+
+                '<tr><td style="text-align:right;margin-top:5px"><strong>Instractions</strong></td><td style="color: #336799; width:75%"> '+ req.body.message + '  </td></tr></table> '
                 ;
     
     //var data = '<div style="font-size:24px; font-weight:bold">ARSENAL</div>';
     
-    var createQuery = "INSERT INTO tip (TIP_WHISTLEBLOWER, TIP_CONTACT_NAME, TIP_CONTACT_TITLE, TIP_INSTITUTION, TIP_ADDRESS, TIP_CITYSTATEZIP, TIP_EMAIL, TIP_PHONE, TIP_INSTRUCTIONS)                                    VALUES ('"+toBeInserted.submitter+"','"+toBeInserted.name+"','"+toBeInserted.title+"', '"+toBeInserted.institution+"', '"+toBeInserted.address+"',                                        '"+toBeInserted.citystatezip+"', '"+toBeInserted.email+"', '"+toBeInserted.phone+"', '"+toBeInserted.instructions+"')";
+    var createQuery = "INSERT INTO tip (TIP_ABS_USER_ID, TIP_CONTACT_NAME, TIP_CONTACT_TITLE, TIP_INSTITUTION, TIP_ADDRESS, TIP_CITYSTATEZIP, TIP_EMAIL, TIP_PHONE, TIP_INSTRUCTIONS)                                    VALUES ('"+toBeInserted.submitter+"','"+toBeInserted.name+"','"+toBeInserted.title+"', '"+toBeInserted.institution+"', '"+toBeInserted.address+"',                                        '"+toBeInserted.citystatezip+"', '"+toBeInserted.email+"', '"+toBeInserted.phone+"', '"+toBeInserted.instructions+"')";
    
-    mssqlutil.executeQuery(null, createQuery, function(err, records) {
+    mssqlutil.executeQuery(ds, createQuery, function(err, records) {
        
-        if (err) res.end('Tip could not be saved! Error occured...');
-        else {
+        if (err) {
+            throw err;
+            res.end('Tip could not be saved! Error occured...');
+        } else {
             console.log(data);
             /* send mail */
             var emailData = {
-                "from":"BM <xxx>",
-                "to":"BM xxxx",
+                "from":"xx@xx-xx.com",
+                "to":"xx@abs-xx.com",
+                "cc": req.body.userSelectEmail,
                 "subject":"New Tip!",            
                 "data": data
             };
-            mailer.send(emailData.from, emailData.to, emailData.subject, emailData.data);        
+            mailer.send(smtp, emailData);        
         }
         res.end();  
     });
+        }        
+    });
+    
+    
 });
 
 app.get("*", function(req, res){
@@ -120,3 +141,29 @@ app.get("*", function(req, res){
 
 /* Start my server on port 3000 */
 app.listen(process.env.PORT || 3000);
+
+/***************************** Utility functions ******************************/
+
+/* Populate SMTP info */
+function getSMTP(propFile) {
+    
+    return { 
+                "host":propFile.path().office365.host,
+                "port":propFile.path().office365.port,
+                "user":propFile.path().office365.user,
+                "pass":propFile.path().office365.pass   
+            };
+    
+}
+
+/* Populate Data Source info */
+function getDS(propFile) {
+    return { 
+                "user":propFile.path().sqlsvrds.user,
+                "password":propFile.path().sqlsvrds.password,
+                "server":propFile.path().sqlsvrds.server,
+                "instance":propFile.path().sqlsvrds.instance,
+                "database":propFile.path().sqlsvrds.database   
+            };
+    
+}
