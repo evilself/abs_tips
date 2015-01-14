@@ -83,12 +83,25 @@ app.post('/getSearchResults', function(req, res){
                 userID = array[i].TIP_USER_ID;
             }
             
-            var selectQuery = 'select * from tip inner join abs_user on abs_user.tip_user_id = tip.tip_abs_user_id where tip.tip_abs_user_id = '+ userID +' order by tip.TIP_DATE desc';    
+            var selectQuery = 'select * from tip inner join abs_user on abs_user.tip_user_id = tip.tip_abs_user_id where tip.tip_abs_user_id = '+ userID ;    
            
+            if(req.body.fromDate) {
+                console.log('From Date Provided');
+                selectQuery += " and tip.TIP_DATE >= '"+ req.body.fromDate +"' ";
+            }
+            if(req.body.toDate) {
+                console.log('To Date Provided');
+                selectQuery += " and tip.TIP_DATE <= '"+ req.body.toDate +"' ";
+            }
+            
+            selectQuery += ' order by tip.TIP_DATE desc';
+            
             mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
 
                 if (err) throw err;
-                if(data.length < 1) res.end('No submitted tips for this user');
+                if(data.length < 1) { 
+                    res.end('No submitted tips for this user or this date period');
+                }
                 console.log(data);
                 var myJsonString = JSON.stringify(data);        
                 res.end(myJsonString);  

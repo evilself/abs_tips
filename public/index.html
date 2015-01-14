@@ -209,24 +209,24 @@
                     <form method="post" action="/getSearchResults" id="searchForm" novalidate>
                         <div class="col-md-12">
                     <div class="form-group">
-                        
+                       
                             <select id="userSelectFilter" style="padding:20px;height:auto;" class="form-control">
 
                             </select>
-                        
-                    </div></div>
+                        </div>
+                    </div>
                         <div class="col-md-6">
                     <div class="form-group">
                         
-                             <div class="col-md-12">
-                            <input class="form-control" placeholder="Start Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="fromDate" type="text"></div>
+                             
+                            <input class="form-control" placeholder="Start Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="fromDate" type="text">
                                    
                         </div>
                             </div>
                         <div class="col-md-6">
                              <div class="form-group">
-                            <div class="col-md-12">
-                            <input class="form-control" placeholder="End Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="toDate" type="text" ></div></div>
+                            
+                            <input class="form-control" placeholder="End Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="toDate" type="text" ></div>
                                     
                         </div>
                         </form>
@@ -408,7 +408,7 @@
                     // Success message       
                     
                      if (data.indexOf('No') > -1) {
-                    
+                    $('#searchForm').trigger("reset");
                     $( "#results" ).html( data );
                 } else {
                    
