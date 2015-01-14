@@ -207,28 +207,41 @@
                     <h2 class="section-heading">Search Tips</h2>
                     <h3 class="section-subheading text-muted">Narrow down your search</h3> 
                     <form method="post" action="/getSearchResults" id="searchForm" novalidate>
+                        <div class="col-md-12">
                     <div class="form-group">
-                        <select id="userSelectFilter" style="padding:20px;height:auto;" class="form-control">
+                        
+                            <select id="userSelectFilter" style="padding:20px;height:auto;" class="form-control">
 
-                        </select>                        
-                    </div>                    
-                        <div class="col-lg-5">
-                            <input class="form-control" placeholder="Start Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="fromDate" type="text">
+                            </select>
+                        
+                    </div></div>
+                        <div class="col-md-6">
+                    <div class="form-group">
+                        
+                             <div class="col-md-12">
+                            <input class="form-control" placeholder="Start Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="fromDate" type="text"></div>
                                    
                         </div>
-                        <div class="col-lg-5">
-                            <input class="form-control" placeholder="End Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="toDate" type="text" >
+                            </div>
+                        <div class="col-md-6">
+                             <div class="form-group">
+                            <div class="col-md-12">
+                            <input class="form-control" placeholder="End Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="toDate" type="text" ></div></div>
                                     
                         </div>
-                    </div>                    
-                    </form>
-                    <div class="col-lg-12 text-center">
-                        <div id="success"></div>
-                        <button type="button" class="btn btn-xl" onclick=getSearchResults()>Search</button>
+                        </form>
+                         <div class="col-md-12 text-center" style="margin-top:20px">                       
+                            <button type="button" class="btn btn-xl" onclick="getSearchResults()">Search</button>
+                        </div>
+                        <div class="col-lg-12 text-center" id="results" style="margin-top:20px">
+                        </div>
                     </div>
+                     
+                    </div>  
+                   
+                   
                 </div>
-                <div class="row" id="results">
-                </div>
+                
             </div>
         </div>
     </section>
@@ -403,7 +416,7 @@
                     var array = JSON.parse(data);
 
                         var table = '<table class="table table-hover table-responsive">';
-                            table += '<tr><th>Date</th><th>Submitter</th><th>Contact Name</th><th>Contact Title</th><th>Institution</th><th>Address</th></tr>'; 
+                            table += '<tr><th class="text-center">Date</th><th class="text-center">Submitter</th><th class="text-center">Contact Name</th><th class="text-center">Contact Title</th><th class="text-center">Institution</th><th class="text-center">Address</th></tr>'; 
 
                         for (var i = 0; i < array.length; i++) {
                            // alert(array[i]);
