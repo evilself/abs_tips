@@ -1,6 +1,63 @@
 $(function() {
+    
+      $("#searchForm input").jqBootstrapValidation({
+        preventSubmit: true,
+        submitError: function($form, event, errors) {
+            // additional error messages or events
+        },
+        submitSuccess: function($form, event) {
+            event.preventDefault(); // prevent default submit behaviour
+            
+            $.ajax({
+                url: "/getSearchResults",
+                type: "POST",
+                data: {					
+                    userSelectName: $('#userSelectFilter option:selected').html(),    
+                    fromDate: $('#fromDate').val(),
+                    toDate: $('#toDate').val()                    
+                },
+                cache: false,
+                success: function(data) {
+                                    
+                     if (data.indexOf('No') > -1) {
+                    $('#searchForm').trigger("reset");
+                    $( "#results" ).html( data );
+                } else {
+                   
+                    
+                    var array = JSON.parse(data);
 
-    $("input,textarea").jqBootstrapValidation({
+                        var table = '<table class="table table-hover table-responsive">';
+                            table += '<tr><th class="text-center">Date</th><th class="text-center">Submitter</th><th class="text-center">Contact Name</th><th class="text-center">Contact Title</th><th class="text-center">Institution</th><th class="text-center">Address</th></tr>'; 
+
+                        for (var i = 0; i < array.length; i++) {
+                           // alert(array[i]);
+                            //Do something
+                            //alert(array[i]);
+                            table += '<tr><td>'+array[i].TIP_DATE.toString().substring(0, 10) +'</td><td>'+array[i].TIP_USER_NAME+'</td><td>'+array[i].TIP_CONTACT_NAME+ '</td><td>'+array[i].TIP_CONTACT_TITLE+ '</td><td>'+array[i].TIP_INSTITUTION+ '</td><td>'+array[i].TIP_ADDRESS+'</td></tr>'; 
+                        }
+                    
+                    
+                    
+                    $('#results').html(table);
+
+                    //clear all fields
+                    $('#searchForm').trigger("reset");}
+                },
+                error: function() {
+                    //clear all fields
+                    $('#searchForm').trigger("reset");
+                },
+            })
+        },
+        filter: function() {
+            return $(this).is(":visible");
+        },
+    });
+    
+    
+
+    $("#contactForm input,textarea").jqBootstrapValidation({
         preventSubmit: true,
         submitError: function($form, event, errors) {
             // additional error messages or events

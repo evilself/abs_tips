@@ -219,20 +219,21 @@
                     <div class="form-group">
                         
                              
-                            <input class="form-control" placeholder="Start Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="fromDate" type="text">
+                            <input class="form-control" placeholder="Start Date *" data-date-format="yyyy-mm-dd" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" data-validation-pattern-message="Field has invalid characters!" style="padding:20px;height:auto;" id="fromDate" type="text"><p class="help-block text-danger"></p>
                                    
                         </div>
                             </div>
                         <div class="col-md-6">
                              <div class="form-group">
                             
-                            <input class="form-control" placeholder="End Date *" data-date-format="yyyy-mm-dd" required style="padding:20px;height:auto;" id="toDate" type="text" ></div>
+                            <input class="form-control" placeholder="End Date *" data-date-format="yyyy-mm-dd" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" data-validation-pattern-message="Field has invalid characters!" style="padding:20px;height:auto;" id="toDate" type="text" ><p class="help-block text-danger"></p></div>
                                     
                         </div>
-                        </form>
                          <div class="col-md-12 text-center" style="margin-top:20px">                       
-                            <button type="button" class="btn btn-xl" onclick="getSearchResults()">Search</button>
+                            <button type="submit" class="btn btn-xl" >Search</button>
                         </div>
+                        </form>
+                        
                         <div class="col-lg-12 text-center" id="results" style="margin-top:20px">
                         </div>
                     </div>
@@ -389,6 +390,11 @@
     <script>
         
         function getSearchResults() {
+            
+            var from = $('#fromDate').val();
+            var to = $('#toDate').val();            
+            
+            
             $('#results').empty();
             console.log($('#userSelectFilter option:selected').html());
             console.log($('#fromDate').val());
