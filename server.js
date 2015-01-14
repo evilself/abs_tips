@@ -119,8 +119,8 @@ app.post('/', function(req, res) {
             console.log(data);
             /* send mail */
             var emailData = {
-                "from":"xx@xx-xx.com",
-                "to":"xx@abs-xx.com",
+                "from":"bmechkov@abs-ok.com",
+                "to":"bmechkov@abs-ok.com",
                 "cc": req.body.userSelectEmail,
                 "subject":"New Tip!",            
                 "data": data
