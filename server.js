@@ -58,6 +58,47 @@ app.get('/getUsers', function(req, res){
 
 });
 
+/* AJAX get tips based on search criteria */
+app.post('/getSearchResults', function(req, res){
+    
+    console.log('Getting search results...');
+    console.log(req.body.userSelectName);
+    console.log(req.body.fromDate);
+    console.log(req.body.toDate);
+    
+    var lookupUserQuery = " select TIP_USER_ID from ABS_USER where ABS_USER.TIP_USER_NAME like '%" +req.body.userSelectName+"%'";
+    var userID = '';
+    console.log(userID);
+    
+    mssqlutil.executeQuery(ds, lookupUserQuery, function(err, records) {
+       
+        if (err) throw err;
+        else {
+            console.log(records);
+            var myJsonString = JSON.stringify(records);
+            var array = JSON.parse(myJsonString);
+            console.log(myJsonString);
+            for (var i = 0; i < array.length; i++) {
+                
+                userID = array[i].TIP_USER_ID;
+            }
+            
+            var selectQuery = 'select * from tip inner join abs_user on abs_user.tip_user_id = tip.tip_abs_user_id where tip.tip_abs_user_id = '+ userID +' order by tip.TIP_DATE desc';    
+           
+            mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
+
+                if (err) throw err;
+                if(data.length < 1) res.end('No submitted tips for this user');
+                console.log(data);
+                var myJsonString = JSON.stringify(data);        
+                res.end(myJsonString);  
+            });  
+        }
+    });  
+
+     
+});
+
 /* AJAX POST */
 app.post('/', function(req, res) { 
     
@@ -103,7 +144,7 @@ app.post('/', function(req, res) {
                 '<tr><td style="text-align:right"><strong>City, State, Zip</strong></td><td style="color: #336799; width:75%"> '+ req.body.citystatezip + '</td></tr>'+
                 '<tr><td style="text-align:right"><strong>Phone</strong></td><td style="color: #336799; width:75%"> '+ req.body.phone + '</td></tr> '+
                 '<tr><td style="text-align:right"><strong>Email</strong></td><td style="color: #336799; width:75%"> '+ req.body.email + ' </td></tr> '+
-                '<tr><td style="text-align:right;margin-top:5px"><strong>Instractions</strong></td><td style="color: #336799; width:75%"> '+ req.body.message + '  </td></tr></table> '
+                '<tr><td style="text-align:right;margin-top:5px"><strong>Instructions</strong></td><td style="color: #336799; width:75%"> '+ req.body.message + '  </td></tr></table> '
                 ;
     
     //var data = '<div style="font-size:24px; font-weight:bold">ARSENAL</div>';
