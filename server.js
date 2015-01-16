@@ -2,10 +2,20 @@
 
 /* import Express */
 var express = require('express');
+
+/* Express v4 http logger */
+var morgan = require('morgan');
 var fs = require('fs');
 var propReader = require('properties-reader');
 var bodyParser = require('body-parser');
 var app = express();
+
+// create a write stream (in append mode)
+var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'})
+
+// setup the logger
+app.use(morgan('combined', {stream: accessLogStream}))
+
 
 /* This is my custom ms sql module. */
 var mssqlutil = require('./mssqlUtil');
@@ -34,8 +44,13 @@ app.get('/getTips', function(req, res){
     var selectQuery = 'select top 10 * from tip order by tip.TIP_DATE desc';
     mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
         
-        if (err) throw err;
-        if(data.length < 1) res.end('No submitted tips');
+        if (err) {
+            console.log(err);
+            res.statusCode = 500;
+            res.end('Oops...there was an error getting the tips...');
+        }
+        
+        if (data.length < 1) res.end('No submitted tips');
         
         var myJsonString = JSON.stringify(data);        
         res.end(myJsonString);  
@@ -49,8 +64,11 @@ app.get('/getUsers', function(req, res){
     var selectQuery = 'select TIP_USER_NAME, TIP_USER_EMAIL from ABS_USER order by ABS_USER.TIP_USER_NAME';
     mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
         
-        if (err) throw err;
-        //if(data.length < 1) res.end('No submitted tips');
+        if (err) {
+            console.log(err);
+            res.statusCode = 500;
+            res.end('Oops...there was an error getting the users...');
+        }
         
         var myJsonString = JSON.stringify(data);        
         res.end(myJsonString);  
@@ -59,25 +77,24 @@ app.get('/getUsers', function(req, res){
 });
 
 /* AJAX get tips based on search criteria */
-app.post('/getSearchResults', function(req, res){
-    
-    console.log('Getting search results...');
-    console.log(req.body.userSelectName);
-    console.log(req.body.fromDate);
-    console.log(req.body.toDate);
+app.post('/getSearchResults', function(req, res){    
     
     var lookupUserQuery = " select TIP_USER_ID from ABS_USER where ABS_USER.TIP_USER_NAME like '%" +req.body.userSelectName+"%'";
     var userID = '';
-    console.log(userID);
+    //console.log(userID);
     
     mssqlutil.executeQuery(ds, lookupUserQuery, function(err, records) {
        
-        if (err) throw err;
+        if (err) {
+            console.log(err);
+            res.statusCode = 500;
+            res.end('Oops...there was an error getting the ID for this user...');
+        }
         else {
-            console.log(records);
+            //console.log(records);
             var myJsonString = JSON.stringify(records);
             var array = JSON.parse(myJsonString);
-            console.log(myJsonString);
+            //console.log(myJsonString);
             for (var i = 0; i < array.length; i++) {
                 
                 userID = array[i].TIP_USER_ID;
@@ -86,11 +103,11 @@ app.post('/getSearchResults', function(req, res){
             var selectQuery = 'select * from tip inner join abs_user on abs_user.tip_user_id = tip.tip_abs_user_id where tip.tip_abs_user_id = '+ userID ;    
            
             if(req.body.fromDate) {
-                console.log('From Date Provided');
+                //console.log('From Date Provided');
                 selectQuery += " and tip.TIP_DATE >= '"+ req.body.fromDate +"' ";
             }
             if(req.body.toDate) {
-                console.log('To Date Provided');
+                //console.log('To Date Provided');
                 selectQuery += " and tip.TIP_DATE <= '"+ req.body.toDate +"' ";
             }
             
@@ -98,11 +115,16 @@ app.post('/getSearchResults', function(req, res){
             
             mssqlutil.executeQuery(ds, selectQuery, function(err, data) {       
 
-                if (err) throw err;
-                if(data.length < 1) { 
+                if (err) {
+                    console.log(err);
+                    res.statusCode = 500;
+                    res.end('Oops...there was an error getting the results...');
+                }
+                
+                if (data.length < 1) { 
                     res.end('No submitted tips for this user or this date period');
                 }
-                console.log(data);
+                //console.log(data);
                 var myJsonString = JSON.stringify(data);        
                 res.end(myJsonString);  
             });  
@@ -117,16 +139,20 @@ app.post('/', function(req, res) {
     
     var lookupUserQuery = " select TIP_USER_ID from ABS_USER where ABS_USER.TIP_USER_NAME like '%" +req.body.userSelectName+"%'";
     var userID = '';
-    console.log(lookupUserQuery)
+    //console.log(lookupUserQuery)
     
     mssqlutil.executeQuery(ds, lookupUserQuery, function(err, records) {
        
-        if (err) res.end('User could not be found');
+        if (err) {
+            console.log(err);
+            res.statusCode = 500;
+            res.end('Oops...there was an error getting the id for this user when submitting...');
+        }
         else {
-            console.log(records);
+            //console.log(records);
             var myJsonString = JSON.stringify(records);
             var array = JSON.parse(myJsonString);
-            console.log(myJsonString);
+            //console.log(myJsonString);
             for (var i = 0; i < array.length; i++) {
                 
                 userID = array[i].TIP_USER_ID;
@@ -134,20 +160,20 @@ app.post('/', function(req, res) {
             var toBeInserted = {
         "submitter":  userID,
         "submitterEmail":  req.body.userSelectEmail,
-        "name":  req.body.name,
-        "title": req.body.title,
-        "institution": req.body.institution,
-        "address": req.body.address,
-        "citystatezip": req.body.citystatezip,
+        "name":  sanitize(req.body.name),
+        "title": sanitize(req.body.title),
+        "institution": sanitize(req.body.institution),
+        "address": sanitize(req.body.address),
+        "citystatezip": sanitize(req.body.citystatezip),
         "email": req.body.email,
         "phone": req.body.phone,
-        "instructions": req.body.message
+        "instructions": sanitize(req.body.message)
     };    
     
-            var sss = toBeInserted.instructions;
-            sss = sss.replace(/'/g, "''");
-            toBeInserted.instructions = sss;
-    console.log(sss);
+          //  var sss = toBeInserted.instructions;
+          //  sss = sss.replace(/'/g, "''");
+         //   toBeInserted.instructions = sss;
+  //  console.log(sss);
        // return ;
     var data =  '<table style="border:1px solid #CCCCCC;"><tr><td style="width:25%;text-align:right"><strong>Submitter</strong></td><td style="color: #336799; width:75%"> '+ req.body.userSelectName + '</td></tr> '+                
                 '<tr><td style="text-align:right"><strong>Name</strong></td><td style="color: #336799; width:75%"> '+ req.body.name + ' </td></tr> '+
@@ -167,10 +193,11 @@ app.post('/', function(req, res) {
     mssqlutil.executeQuery(ds, createQuery, function(err, records) {
        
         if (err) {
-            throw err;
-            res.end('Tip could not be saved! Error occured...');
+            console.log(err);
+            res.statusCode = 500;
+            res.end('Oops...there was an error saving the tips...');
         } else {
-            console.log(data);
+           // console.log(data);
             /* send mail */
             var emailData = {
                 "from":"bmechkov@abs-ok.com",
@@ -215,9 +242,15 @@ function getDS(propFile) {
     return { 
                 "user":propFile.path().sqlsvrds.user,
                 "password":propFile.path().sqlsvrds.password,
-                "server":propFile.path().sqlsvrds.server,
-                "instance":propFile.path().sqlsvrds.instance,
-                "database":propFile.path().sqlsvrds.database   
+                "server": (propFile.path().sqlsvrds.server +'\\'+propFile.path().sqlsvrds.instance),                
+                "database":propFile.path().sqlsvrds.database,
+                "options": { encrypt: propFile.path().sqlsvrds.encrypt }
             };
     
+}
+
+
+//Sanitize input for special characters
+function sanitize(value) {    
+    return value.replace(/'/g, "''");    
 }

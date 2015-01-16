@@ -411,12 +411,13 @@
                 },
                 cache: false,
                 success: function(data) {
-                    // Success message       
+                    // Success message 
+                                      
                     
                      if (data.indexOf('No') > -1) {
-                    $('#searchForm').trigger("reset");
-                    $( "#results" ).html( data );
-                } else {
+                        $('#searchForm').trigger("reset");
+                        $( "#results" ).html( data );
+                    } else {
                    
                     
                     var array = JSON.parse(data);

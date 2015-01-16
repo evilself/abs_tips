@@ -22,8 +22,7 @@ $(function() {
                      if (data.indexOf('No') > -1) {
                     $('#searchForm').trigger("reset");
                     $( "#results" ).html( data );
-                } else {
-                   
+                } else {                 
                     
                     var array = JSON.parse(data);
 
@@ -96,7 +95,16 @@ $(function() {
                     message: message
                 },
                 cache: false,
-                success: function() {
+                success: function(data) {
+                    
+                    
+                     if (data.indexOf('error') > -1) {
+                       //$('#searchForm').trigger("reset");
+                        alert(data);
+                        $( "#success" ).html( data ).css('color','red');
+                        return false;
+                     }  
+                    
                     // Success message
                     $('#success').html("<div class='alert alert-success'>");
                     $('#success > .alert-success').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
