@@ -20,9 +20,14 @@ $(function() {
                 success: function(data) {
                                     
                      if (data.indexOf('No') > -1) {
-                    $('#searchForm').trigger("reset");
-                    $( "#results" ).html( data );
-                } else {                 
+                       
+                         $('#filterName').text($('#userSelectFilter option:selected').html());
+                         $('#filterFromDate').text($('#fromDate').val());
+                         $('#filterToDate').text($('#toDate').val());
+                         $('#filter').show();
+                        $('#searchForm').trigger("reset");
+                         $( "#results" ).html( data );
+                    } else {                 
                     
                     var array = JSON.parse(data);
 
@@ -36,6 +41,11 @@ $(function() {
                             table += '<tr><td>'+array[i].TIP_DATE.toString().substring(0, 10) +'</td><td>'+array[i].TIP_USER_NAME+'</td><td>'+array[i].TIP_CONTACT_NAME+ '</td><td>'+array[i].TIP_CONTACT_TITLE+ '</td><td>'+array[i].TIP_INSTITUTION+ '</td><td>'+array[i].TIP_ADDRESS+'</td></tr>'; 
                         }
                     
+                                    
+                    $('#filterName').text($('#userSelectFilter option:selected').html());
+                    $('#filterFromDate').text($('#fromDate').val());
+                    $('#filterToDate').text($('#toDate').val());
+                    $('#filter').show();
                     
                     
                     $('#results').html(table);

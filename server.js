@@ -206,7 +206,7 @@ app.post('/', function(req, res) {
                 "subject":"New Tip!",            
                 "data": data
             };
-            mailer.send(smtp, emailData);        
+            //mailer.send(smtp, emailData);        
         }
         res.end();  
     });
