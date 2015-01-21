@@ -344,9 +344,15 @@
         (function($){ 
             
             //Initialize DatePicker
-            $('#fromDate').datepicker();
-            $('#toDate').datepicker();
+            var startDate =  $('#fromDate').datepicker();            
+            startDate.on('changeDate', function(ev){            
+                startDate.datepicker('hide');            
+            });
             
+            var endDate = $('#toDate').datepicker();
+            endDate.on('changeDate', function(ev){            
+                endDate.datepicker('hide');            
+            });
             
             $.get( "/getTips", function( data ) {                
                

@@ -37,6 +37,7 @@ var properties = propReader('config.properties');
 
 var smtp = getSMTP(properties);
 var ds = getDS(properties);
+var salesManagerEmail = getSalesEmail(properties);
 
 /* AJAX get the most recent tips */
 app.get('/getTips', function(req, res){
@@ -200,13 +201,14 @@ app.post('/', function(req, res) {
            // console.log(data);
             /* send mail */
             var emailData = {
-                "from":"bmechkov@abs-ok.com",
-                "to":"bmechkov@abs-ok.com",
+                "from": smtp.user,
+                "to": salesManagerEmail.manager,
                 "cc": req.body.userSelectEmail,
                 "subject":"New Tip!",            
                 "data": data
             };
-            //mailer.send(smtp, emailData);        
+           
+            mailer.send(smtp, emailData);        
         }
         res.end();  
     });
@@ -222,6 +224,7 @@ app.get("*", function(req, res){
 
 /* Start my server on port 3000 */
 app.listen(process.env.PORT || 3000);
+console.log('Started');
 
 /***************************** Utility functions ******************************/
 
@@ -246,6 +249,14 @@ function getDS(propFile) {
                 "database":propFile.path().sqlsvrds.database,
                 "options": { encrypt: propFile.path().sqlsvrds.encrypt }
             };
+    
+}
+
+/* Populate email info */
+function getSalesEmail(propFile) {
+    return { 
+                "manager":propFile.path().manager.email                
+           };
     
 }
 
