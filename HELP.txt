@@ -1,0 +1,22 @@
+Author: BorisM
+Date:   1.21.2015
+
+
+App Server: svr-cp3stage
+Port:       3000
+
+DB Server:  svr-sql2012
+
+__________________________________________________________________________________
+
+Source Code: https://github.com/evilself/abs_tips
+Config file: In App server, navigate to C:\NODE\ABS_TIPS\config.properties
+
+__________________________________________________________________________________
+
+DAEMON INFORMATION
+
+The ABS_TIPS runs as  Deamon thread on the APP server.
+You can see the thread named NODE.EXE in the Task Manager on the server. 
+To start -> open COMMAND PROMPT, navigate to source and type 'FOREVER START SERVER.JS'
+To stop  -> open COMMAND PROMPT, navigate to source and type 'FOREVER STOP SERVER.JS'

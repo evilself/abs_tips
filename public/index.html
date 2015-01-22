@@ -201,6 +201,22 @@
     
     <!-- Services Section -->
     <section id="lookup">
+        <div id="tipDetails" class="modal fade" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Tip Details</h4>
+              </div>
+              <div class="modal-body">
+                <p></p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-xl" data-dismiss="modal">Close</button>                
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 text-center">
@@ -343,6 +359,9 @@
     <script>
         (function($){ 
             
+            //GLOBAL ARRAY
+            var globalArrayTips;
+            
             //Initialize DatePicker
             var startDate =  $('#fromDate').datepicker();            
             startDate.on('changeDate', function(ev){            
@@ -462,6 +481,27 @@
             })
             
             //alert('hi');   
+        }
+    </script>
+
+    <script>
+        
+        function getTipDetails(value) {
+            var item = globalArrayTips[value];    
+            
+            var data =  '<table style="width:100%;"><tr><td style="padding-right:10px;width:25%;text-align:right"><strong>Submitter</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_USER_NAME + '</td></tr> '+                
+                '<tr><td style="padding-right:10px;text-align:right"><strong>Name</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_CONTACT_NAME + ' </td></tr> '+
+                '<tr><td style="padding-right:10px;text-align:right"><strong>Title</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_CONTACT_TITLE + ' </td></tr> '+
+                '<tr><td style="padding-right:10px;text-align:right"><strong>Institution</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_INSTITUTION + ' </td></tr> '+
+                '<tr><td style="padding-right:10px;text-align:right"><strong>Address</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_ADDRESS + '</td></tr> '+
+                '<tr><td style="padding-right:10px;text-align:right"><strong>City, State, Zip</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_CITYSTATEZIP + '</td></tr>'+
+                '<tr><td style="padding-right:10px;text-align:right"><strong>Phone</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_PHONE + '</td></tr> '+
+                '<tr><td style="padding-right:10px;text-align:right"><strong>Email</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_EMAIL + ' </td></tr> '+
+                '<tr><td style="padding-right:10px;text-align:right;margin-top:5px"><strong>Instructions</strong></td><td style="color: #336799; width:75%"> '+ item.TIP_INSTRUCTIONS + '  </td></tr></table> '
+                ;
+            
+            $('.modal-body').html(data);
+            //alert(item); 
         }
     </script>
 

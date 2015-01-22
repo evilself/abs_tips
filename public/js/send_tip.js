@@ -30,6 +30,10 @@ $(function() {
                     } else {                 
                     
                     var array = JSON.parse(data);
+                        globalArrayTips = null;
+                        globalArrayTips = array.slice();
+                        
+                       // alert("global: "+globalArrayTips);
 
                         var table = '<table class="table table-hover table-responsive">';
                             table += '<tr><th class="text-center">Date</th><th class="text-center">Submitter</th><th class="text-center">Contact Name</th><th class="text-center">Contact Title</th><th class="text-center">Institution</th><th class="text-center">Address</th></tr>'; 
@@ -38,7 +42,9 @@ $(function() {
                            // alert(array[i]);
                             //Do something
                             //alert(array[i]);
-                            table += '<tr><td>'+array[i].TIP_DATE.toString().substring(0, 10) +'</td><td>'+array[i].TIP_USER_NAME+'</td><td>'+array[i].TIP_CONTACT_NAME+ '</td><td>'+array[i].TIP_CONTACT_TITLE+ '</td><td>'+array[i].TIP_INSTITUTION+ '</td><td>'+array[i].TIP_ADDRESS+'</td></tr>'; 
+                            var item = JSON.stringify(array[i]);    
+                            //alert(item);
+                            table += '<tr><td>'+array[i].TIP_DATE.toString().substring(0, 10) +'</td><td>'+array[i].TIP_USER_NAME+'</td><td>'+array[i].TIP_CONTACT_NAME+ '</td><td>'+array[i].TIP_CONTACT_TITLE+ '</td><td>'+array[i].TIP_INSTITUTION+ '</td><td>'+array[i].TIP_ADDRESS+'</td><td><button onclick="getTipDetails('+i+')" class="btn btn-primary" data-toggle="modal" data-target="#tipDetails">View</button></td></tr>'; 
                         }
                     
                                     
@@ -126,6 +132,29 @@ $(function() {
 
                     //clear all fields
                     $('#contactForm').trigger("reset");
+                    
+             $.get( "/getTips", function( data ) {                
+               
+                if (data.indexOf('No') > -1) {
+                    
+                    $( "#testDiv" ).html( data );
+                } else {
+                
+                    var array = JSON.parse(data);
+
+                    var content = '<ul class="text-left">';
+
+                    for (var i = 0; i < array.length; i++) {
+                       // alert(array[i]);
+                        //Do something
+                        content += '<li>'+'<strong>Name:</strong> '+array[i].TIP_CONTACT_NAME+ ' | <strong>Title:</strong> ' + array[i].TIP_CONTACT_TITLE + ' | <strong>Institution:</strong> ' + array[i].TIP_INSTITUTION +'</li>'
+                        //$( "#testDiv" ).append('<p>'+array[i].TIP_ID+ ' | ' + array[i].TIP_CONTACT_NAME + '</p>'); 
+                    }
+                    content += '</ul>';
+
+                  $( "#testDiv" ).html( content );   
+                }
+            });
                 },
                 error: function() {
                     // Fail message
